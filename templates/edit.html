@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head><title>Filtre Uygula</title></head>
+<link rel="stylesheet" type="text/css" href="/static/css/style.css">
 <body>
-<h2>Filtre Seç</h2>
-<img src="/static/uploads/{{ filename }}" width="300">
+  <div class="header-section">
+      <h2>Filtre Seç</h2> 
 <form method="post">
   <select name="action">
     <option value="average">Ortalama</option>
@@ -14,9 +15,18 @@
   </select>
   <input type="submit" value="Uygula">
 </form>
-<h3>Sonuç</h3>
-<img src="/static/uploads/processed_{{ filename }}" width="300">
-<h3>Histogram</h3>
-<img src="/static/uploads/hist_{{ filename }}" width="300">
+  </div>
+<div class="sidetoside">
+  <div class="first-section">
+<h2>Orijinal Resim</h2> 
+<img src="/static/uploads/{{ filename }}" width="300">
+</div>
+<div class="first-section">
+<h2>Sonuç</h2>
+<img src="/static/uploads/processed_{{ filename }}" width="300"></div>
+<div class="first-section">
+<h2>Histogram</h2>
+<img src="/static/uploads/hist_{{ filename }}" width="300"></div>
+</div>
 </body>
 </html>
