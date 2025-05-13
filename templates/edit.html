@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><title>Filtre Uygula</title></head>
+<body>
+<h2>Filtre Seç</h2>
+<img src="/static/uploads/{{ filename }}" width="300">
+<form method="post">
+  <select name="action">
+    <option value="average">Ortalama</option>
+    <option value="median">Ortanca</option>
+    <option value="edge">Kenar Algılama</option>
+    <option value="sharpen">Keskinleştirme</option>
+    <option value="smooth">Yumuşatma</option>
+  </select>
+  <input type="submit" value="Uygula">
+</form>
+<h3>Sonuç</h3>
+<img src="/static/uploads/processed_{{ filename }}" width="300">
+<h3>Histogram</h3>
+<img src="/static/uploads/hist_{{ filename }}" width="300">
+</body>
+</html>

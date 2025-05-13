@@ -1,0 +1,28 @@
+# Sanal ortam
+venv/
+ENV/
+env/
+.venv/
+
+# VSCode ayarları
+.vscode/
+
+# Derlenmiş Python dosyaları
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Yüklenen görseller
+static/uploads/
+
+# Jupyter notebook checkpoint'leri
+.ipynb_checkpoints/
+
+# Sistem dosyaları
+.DS_Store
+Thumbs.db
+
+# IDE dosyaları
+*.sublime-workspace
+*.sublime-project
+*.idea/
