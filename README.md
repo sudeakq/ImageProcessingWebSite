@@ -7,6 +7,7 @@ This project is a web image processing application developed using the Python-ba
 
 This project is a web-based image processing application developed with the Flask framework. Users can apply various filters on uploaded images, view histogram analysis and download processed images to their computers.
 
+
 ## 🔧 Features
 
 - Upload images in formats such as `.jpg`, `.png`, `.bmp`
@@ -18,9 +19,14 @@ This project is a web-based image processing application developed with the Flas
 ## 🚀 Installation and Operation
 
 ### 1. Required Libraries
+pip install flask opencv-python numpy
+
 
 Create a virtual environment and activate it:
 
 ```bash
 python -m venv venv
 source venv/bin/activate # or for Windows: venv\Scripts\activate
+
+python app.py
+
