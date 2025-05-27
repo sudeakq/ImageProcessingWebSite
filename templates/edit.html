@@ -278,37 +278,38 @@
         <div class="form-group">
           <label for="action"><strong>İşlem Seç:</strong></label>
           <select name="action" id="action" class="form-control" onchange="showOptions()">
-            <optgroup label="Filtreler">
-              <option value="average">Ortalama Filtre</option>
-              <option value="median">Ortanca Filtre</option>
-              <option value="edge">Kenar Algılama</option>
-              <option value="sharpen">Keskinleştirme</option>
-              <option value="smooth">Yumuşatma</option>
-            </optgroup>
-            <optgroup label="Geometrik İşlemler">
-              <option value="rotate">Döndürme</option>
-              <option value="resize">Yeniden Boyutlandırma</option>
-              <option value="mirror_horizontal">Yatay Aynalama</option>
-              <option value="mirror_vertical">Dikey Aynalama</option>
-            </optgroup>
-            <optgroup label="Histogram İşlemleri">
-              <option value="hist_equalize">Histogram Eşitleme</option>
-              <option value="contrast_stretch">Kontrast Germe</option>
-            </optgroup>
-            <optgroup label="Eşikleme İşlemleri">
-              <option value="threshold_manual">Manuel Eşikleme</option>
-              <option value="threshold_otsu">Otsu İkilileştirme</option>
-              <option value="threshold_kapur">Kapur İkilileştirme</option>
-            </optgroup>
-            <optgroup label="Morfolojik İşlemler">
-              <option value="dilation">Genişletme (Dilation)</option>
-              <option value="erosion">Erozyon (Erosion)</option>
-            </optgroup>
-            <optgroup label="Analiz İşlemleri">
-              <option value="center_of_mass">Ağırlık Merkezi Hesaplama</option>
-              <option value="skeletonize">İskelet Çıkarma</option>
-            </optgroup>
-          </select>
+  <optgroup label="Filtreler">
+    <option value="average" {% if selected_action == 'average' %}selected{% endif %}>Ortalama Filtre</option>
+    <option value="median" {% if selected_action == 'median' %}selected{% endif %}>Ortanca Filtre</option>
+    <option value="edge" {% if selected_action == 'edge' %}selected{% endif %}>Kenar Algılama</option>
+    <option value="sharpen" {% if selected_action == 'sharpen' %}selected{% endif %}>Keskinleştirme</option>
+    <option value="smooth" {% if selected_action == 'smooth' %}selected{% endif %}>Yumuşatma</option>
+  </optgroup>
+  <optgroup label="Geometrik İşlemler">
+    <option value="rotate" {% if selected_action == 'rotate' %}selected{% endif %}>Döndürme</option>
+    <option value="resize" {% if selected_action == 'resize' %}selected{% endif %}>Yeniden Boyutlandırma</option>
+    <option value="mirror_horizontal" {% if selected_action == 'mirror_horizontal' %}selected{% endif %}>Yatay Aynalama</option>
+    <option value="mirror_vertical" {% if selected_action == 'mirror_vertical' %}selected{% endif %}>Dikey Aynalama</option>
+  </optgroup>
+  <optgroup label="Histogram İşlemleri">
+    <option value="hist_equalize" {% if selected_action == 'hist_equalize' %}selected{% endif %}>Histogram Eşitleme</option>
+    <option value="contrast_stretch" {% if selected_action == 'contrast_stretch' %}selected{% endif %}>Kontrast Germe</option>
+  </optgroup>
+  <optgroup label="Eşikleme İşlemleri">
+    <option value="threshold_manual" {% if selected_action == 'threshold_manual' %}selected{% endif %}>Manuel Eşikleme</option>
+    <option value="threshold_otsu" {% if selected_action == 'threshold_otsu' %}selected{% endif %}>Otsu İkilileştirme</option>
+    <option value="threshold_kapur" {% if selected_action == 'threshold_kapur' %}selected{% endif %}>Kapur İkilileştirme</option>
+  </optgroup>
+  <optgroup label="Morfolojik İşlemler">
+    <option value="dilation" {% if selected_action == 'dilation' %}selected{% endif %}>Genişletme (Dilation)</option>
+    <option value="erosion" {% if selected_action == 'erosion' %}selected{% endif %}>Erozyon (Erosion)</option>
+  </optgroup>
+  <optgroup label="Analiz İşlemleri">
+    <option value="center_of_mass" {% if selected_action == 'center_of_mass' %}selected{% endif %}>Ağırlık Merkezi Hesaplama</option>
+    <option value="skeletonize" {% if selected_action == 'skeletonize' %}selected{% endif %}>İskelet Çıkarma</option>
+  </optgroup>
+</select>
+
         </div>
         
         <!-- Döndürme Parametreleri -->

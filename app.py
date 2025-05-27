@@ -341,6 +341,7 @@ def edit(filename):
     processed_image = image
     hist_img = None
     error_msg = None
+    action = None
 
     try:
         original_hist_img = calculate_histogram(image)
@@ -385,7 +386,11 @@ def edit(filename):
             print(f"Error in image processing: {str(e)}")
 
     has_processed = os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], f'processed_{filename}'))
-    return render_template('edit.html', filename=filename, has_processed=has_processed, error_msg=error_msg)
+    return render_template('edit.html',
+                       filename=filename,
+                       has_processed=has_processed,
+                       error_msg=error_msg,
+                       selected_action=action)
 
 @app.route('/download/<filename>')
 def download(filename):
