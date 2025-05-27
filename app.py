@@ -3,6 +3,7 @@ import os
 import cv2
 import numpy as np
 from werkzeug.utils import secure_filename
+from PIL import Image as PILImage
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'static/uploads/'
@@ -302,34 +303,55 @@ def index():
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
+
+        # Eğer dosya .tiff veya .tif ise PNG'ye dönüştür
+        if filename.lower().endswith(('.tif', '.tiff')):
+            try:
+                new_filename = filename.rsplit('.', 1)[0] + '.png'
+                new_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+                with PILImage.open(filepath) as img:
+                    img.convert("RGB").save(new_path, "PNG")
+                filename = new_filename  # HTML tarafı artık .png görecek
+            except Exception as e:
+                return f"TIFF dosyası dönüştürülürken hata oluştu: {str(e)}", 500
+
         return redirect(f'/edit/{filename}')
     return render_template('index.html')
 
 @app.route('/edit/<filename>', methods=['GET', 'POST'])
 def edit(filename):
+    # .tiff ismi geldiyse ama .png varsa onu kullan
+    if filename.lower().endswith(('.tif', '.tiff')):
+        png_filename = filename.rsplit('.', 1)[0] + '.png'
+        png_path = os.path.join(app.config['UPLOAD_FOLDER'], png_filename)
+        if os.path.exists(png_path):
+            filename = png_filename
+
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     image = cv2.imread(image_path)
-    
+
     if image is None:
-        return "Görüntü yüklenemedi! Lütfen desteklenen bir görüntü formatı kullanın.", 400
-    
+        try:
+            pil_image = PILImage.open(image_path).convert('RGB')
+            image = np.array(pil_image)
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        except Exception as e:
+            return f"Görüntü yüklenemedi! Hata: {str(e)}", 400
+
     processed_image = image
     hist_img = None
     error_msg = None
-    
+
     try:
         original_hist_img = calculate_histogram(image)
-        # Save the original histogram
         cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], f'orig_hist_{filename}'), original_hist_img)
     except Exception as e:
         print(f"Original histogram error: {str(e)}")
-        original_hist_img = np.zeros((300, 256, 3), dtype=np.uint8)  # Empty histogram
+        original_hist_img = np.zeros((300, 256, 3), dtype=np.uint8)
         cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], f'orig_hist_{filename}'), original_hist_img)
-    
+
     if request.method == 'POST':
         action = request.form.get('action')
-        
-        # Get parameters for operations that need them
         params = {}
         if action == 'rotate':
             params['angle'] = request.form.get('angle', '90')
@@ -342,32 +364,26 @@ def edit(filename):
             params['thresh_value'] = request.form.get('thresh_value', '128')
         elif action == 'dilation' or action == 'erosion':
             params['kernel_size'] = request.form.get('kernel_size', '5')
-        
+
         try:
             processed_image = apply_filter(image, action, params)
-            
-            # Make sure processed_image is valid for writing
             if processed_image is None or processed_image.size == 0:
                 error_msg = "İşlenmiş görüntü oluşturulamadı!"
-                processed_image = image  # Fallback to original
+                processed_image = image
             else:
-                # Try to calculate histogram for the processed image
                 try:
                     hist_img = calculate_histogram(processed_image)
                     cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], f'hist_{filename}'), hist_img)
                 except Exception as e:
                     print(f"Histogram calculation error: {str(e)}")
-                    # Create an empty histogram image if calculation fails
                     hist_img = np.zeros((300, 256, 3), dtype=np.uint8)
                     cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], f'hist_{filename}'), hist_img)
-                
-                # Save the processed image
+
                 cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], f'processed_{filename}'), processed_image)
-        
         except Exception as e:
             error_msg = f"İşlem sırasında bir hata oluştu: {str(e)}"
             print(f"Error in image processing: {str(e)}")
-    
+
     has_processed = os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], f'processed_{filename}'))
     return render_template('edit.html', filename=filename, has_processed=has_processed, error_msg=error_msg)
 
