@@ -18,14 +18,14 @@ def apply_filter(image, filter_type, params=None):
     elif filter_type == 'median':
         return cv2.medianBlur(image, 3)
     elif filter_type == 'edge':
-        # Convert to grayscale if needed
+        # Gerekirse gri tonlamaya çevir
         if len(image.shape) == 3:
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         else:
             gray = image
-        # Apply Canny edge detection
+        # Canny kenar algılama uygula
         edges = cv2.Canny(gray, 100, 200)
-        # Convert back to 3-channel for consistent histogram calculation
+        # Histogram hesaplaması için tekrar 3 kanallı hale getir
         if len(image.shape) == 3:
             return cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
         return edges
@@ -47,227 +47,227 @@ def apply_filter(image, filter_type, params=None):
         new_height, new_width = int(height * scale), int(width * scale)
         return cv2.resize(image, (new_width, new_height))
     elif filter_type == 'mirror_horizontal':
-        return cv2.flip(image, 1)  # 1 for horizontal flip
+        return cv2.flip(image, 1)  # 1 yatay ayna
     elif filter_type == 'mirror_vertical':
-        return cv2.flip(image, 0)  # 0 for vertical flip
+        return cv2.flip(image, 0)  # 0 dikey ayna
     elif filter_type == 'center_of_mass':
-        # Convert to grayscale if it's a color image
+        # Renkli ise griye çevir
         if len(image.shape) == 3:
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         else:
             gray = image
         
-        # Threshold the image to create binary image
+        # İkili görüntü için eşik uygula
         _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
         
-        # Calculate moments
+        # Momentleri hesapla
         M = cv2.moments(binary)
         
-        # Calculate center of mass (centroid)
+        # Kütle merkezini (centroid) hesapla
         if M["m00"] != 0:
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
         else:
-            # If no valid moments (e.g., all black image), use center of image
+            # Geçerli moment yoksa (ör: tamamen siyah), görüntü merkezini kullan
             cX, cY = gray.shape[1] // 2, gray.shape[0] // 2
         
-        # Create a copy of the original image
+        # Orijinal görüntünün kopyasını oluştur
         result = image.copy() if len(image.shape) == 3 else cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
         
-        # Draw a red circle at the center of mass
+        # Kütle merkezine kırmızı bir daire çiz
         cv2.circle(result, (cX, cY), 10, (0, 0, 255), -1)
         
-        # Draw crosshair lines
+        # Artı işareti çiz
         cv2.line(result, (cX - 20, cY), (cX + 20, cY), (0, 0, 255), 2)
         cv2.line(result, (cX, cY - 20), (cX, cY + 20), (0, 0, 255), 2)
         
-        # Add text with coordinates
+        # Koordinatları yaz
         cv2.putText(result, f"({cX}, {cY})", (cX + 20, cY + 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         
         return result
         
     elif filter_type == 'skeletonize':
-        # Convert to grayscale if it's a color image
+        # Renkli ise griye çevir
         if len(image.shape) == 3:
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         else:
             gray = image
         
-        # Threshold the image to create binary image
+        # İkili görüntü için eşik uygula
         _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
         
-        # Create an empty skeleton image
+        # Boş bir iskelet görüntüsü oluştur
         skeleton = np.zeros(binary.shape, np.uint8)
         
-        # Get a cross-shaped structuring element
+        # Çapraz şekilli yapısal eleman al
         element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
         
-        # Copy the binary image
+        # İkili görüntüyü kopyala
         img = binary.copy()
         
-        # Skeletonization algorithm
+        # İskelet algoritması
         while True:
-            # Step 1: Open the image
+            # 1. Adım: Açma işlemi uygula
             open_img = cv2.morphologyEx(img, cv2.MORPH_OPEN, element)
-            # Step 2: Subtract open from the original
+            # 2. Adım: Açılmış görüntüyü orijinalden çıkar
             temp = cv2.subtract(img, open_img)
-            # Step 3: Erode the original image
+            # 3. Adım: Orijinali erozyona uğrat
             eroded = cv2.erode(img, element)
-            # Step 4: Get the skeleton parts
+            # 4. Adım: İskelet parçalarını al
             skeleton = cv2.bitwise_or(skeleton, temp)
-            # Step 5: Set the eroded image for next iteration
+            # 5. Adım: Sonraki iterasyon için erozyonlu görüntüyü kullan
             img = eroded.copy()
             
-            # If there are no white pixels left, we're done
+            # Beyaz piksel kalmadıysa bitir
             if cv2.countNonZero(img) == 0:
                 break
         
-        # Convert back to 3-channel if original was color
+        # Orijinal renkli ise tekrar 3 kanallı yap
         if len(image.shape) == 3:
             skeleton = cv2.cvtColor(skeleton, cv2.COLOR_GRAY2BGR)
         
         return skeleton
     
     elif filter_type == 'hist_equalize':
-        if len(image.shape) == 3:  # Color image
+        if len(image.shape) == 3:  # Renkli görüntü
             img_yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
             img_yuv[:,:,0] = cv2.equalizeHist(img_yuv[:,:,0])
             return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
-        else:  # Grayscale image
+        else:  # Gri tonlamalı görüntü
             return cv2.equalizeHist(image)
     elif filter_type == 'contrast_stretch':
         min_val = int(params.get('min', 50))
         max_val = int(params.get('max', 200))
-        # Convert to appropriate range
+        # Uygun aralığa çevir
         min_percent = min_val / 255.0
         max_percent = max_val / 255.0
         
-        # Apply contrast stretching
+        # Kontrast germe uygula
         min_val = np.percentile(image, min_percent * 100)
         max_val = np.percentile(image, max_percent * 100)
         
-        # Clip image
+        # Görüntüyü kırp
         stretched = np.clip((image - min_val) * 255.0 / (max_val - min_val), 0, 255).astype(np.uint8)
         return stretched
-    # Manual thresholding
+    # Manuel eşikleme
     elif filter_type == 'threshold_manual':
         thresh_value = int(params.get('thresh_value', 128))
-        # Convert to grayscale if it's a color image
+        # Renkli ise griye çevir
         if len(image.shape) == 3:
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         else:
             gray = image
-        # Apply thresholding
+        # Eşik uygula
         _, binary = cv2.threshold(gray, thresh_value, 255, cv2.THRESH_BINARY)
-        # Convert back to 3-channel if original was color
+        # Orijinal renkli ise tekrar 3 kanallı yap
         if len(image.shape) == 3:
             binary = cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR)
         return binary
-    # Otsu thresholding
+    # Otsu eşikleme
     elif filter_type == 'threshold_otsu':
-        # Convert to grayscale if it's a color image
+        # Renkli ise griye çevir
         if len(image.shape) == 3:
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         else:
             gray = image
-        # Apply Otsu's thresholding
+        # Otsu eşikleme uygula
         _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        # Convert back to 3-channel if original was color
+        # Orijinal renkli ise tekrar 3 kanallı yap
         if len(image.shape) == 3:
             binary = cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR)
         return binary
-    # Kapur thresholding (entropy-based)
+    # Kapur eşikleme (entropi tabanlı)
     elif filter_type == 'threshold_kapur':
-        # Convert to grayscale if it's a color image
+        # Renkli ise griye çevir
         if len(image.shape) == 3:
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         else:
             gray = image
         
-        # Calculate histogram and normalize it
+        # Histogramı hesapla ve normalize et
         hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
         hist = hist.flatten() / hist.sum()
         
-        # Calculate threshold using Kapur's entropy method
+        # Kapur'un entropi yöntemiyle eşik hesapla
         threshold = 0
         max_entropy = 0
         
         for t in range(1, 255):
-            # Background
+            # Arkaplan
             bg_hist = hist[:t]
             bg_sum = bg_hist.sum()
             
-            # Foreground
+            # Önplan
             fg_hist = hist[t:]
             fg_sum = fg_hist.sum()
             
-            # Avoid division by zero
+            # Sıfıra bölmeyi önle
             if bg_sum > 0 and fg_sum > 0:
-                # Normalize histograms
+                # Histogramları normalize et
                 bg_hist_norm = bg_hist / bg_sum
                 fg_hist_norm = fg_hist / fg_sum
                 
-                # Calculate entropies (avoiding log(0))
+                # Entropileri hesapla (log(0)'dan kaçın)
                 bg_entropy = -np.sum(bg_hist_norm * np.log2(bg_hist_norm + 1e-10))
                 fg_entropy = -np.sum(fg_hist_norm * np.log2(fg_hist_norm + 1e-10))
                 
-                # Total entropy
+                # Toplam entropi
                 total_entropy = bg_entropy + fg_entropy
                 
-                # Update threshold if entropy is higher
+                # Entropi daha yüksekse eşik güncelle
                 if total_entropy > max_entropy:
                     max_entropy = total_entropy
                     threshold = t
         
-        # Apply threshold
+        # Eşik uygula
         _, binary = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
         
-        # Convert back to 3-channel if original was color
+        # Orijinal renkli ise tekrar 3 kanallı yap
         if len(image.shape) == 3:
             binary = cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR)
         
         return binary
-    # Dilation operation (morphological)
+    # Dilate işlemi (morfolojik)
     elif filter_type == 'dilation':
-        # Get kernel size from params or use default
+        # Parametrelerden kernel boyutunu al veya varsayılanı kullan
         kernel_size = int(params.get('kernel_size', 5))
-        # Create kernel for dilation
+        # Dilation için kernel oluştur
         kernel = np.ones((kernel_size, kernel_size), np.uint8)
         
-        # If color image, convert to binary first
+        # Renkli ise önce ikiliye çevir
         if len(image.shape) == 3:
-            # Convert to grayscale
+            # Griye çevir
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            # Apply threshold to get binary
+            # İkiliye çevir
             _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
-            # Apply dilation
+            # Dilate uygula
             dilated = cv2.dilate(binary, kernel, iterations=1)
-            # Convert back to BGR
+            # Tekrar BGR yap
             return cv2.cvtColor(dilated, cv2.COLOR_GRAY2BGR)
         else:
-            # If already grayscale, apply threshold and dilation
+            # Zaten gri ise eşik ve dilation uygula
             _, binary = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
             return cv2.dilate(binary, kernel, iterations=1)
-    # Erosion operation (morphological)
+    # Erozyon işlemi (morfolojik)
     elif filter_type == 'erosion':
-        # Get kernel size from params or use default
+        # Parametrelerden kernel boyutunu al veya varsayılanı kullan
         kernel_size = int(params.get('kernel_size', 5))
-        # Create kernel for erosion
+        # Erozyon için kernel oluştur
         kernel = np.ones((kernel_size, kernel_size), np.uint8)
         
-        # If color image, convert to binary first
+        # Renkli ise önce ikiliye çevir
         if len(image.shape) == 3:
-            # Convert to grayscale
+            # Griye çevir
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            # Apply threshold to get binary
+            # İkiliye çevir
             _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
-            # Apply erosion
+            # Erozyon uygula
             eroded = cv2.erode(binary, kernel, iterations=1)
-            # Convert back to BGR
+            # Tekrar BGR yap
             return cv2.cvtColor(eroded, cv2.COLOR_GRAY2BGR)
         else:
-            # If already grayscale, apply threshold and erosion
+            # Zaten gri ise eşik ve erozyon uygula
             _, binary = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
             return cv2.erode(binary, kernel, iterations=1)
     else:
@@ -276,16 +276,16 @@ def apply_filter(image, filter_type, params=None):
 def calculate_histogram(image):
     hist_img = np.zeros((300, 256, 3), dtype=np.uint8)
     
-    # Check if the image is grayscale or color
+    # Görüntü gri mi renkli mi kontrol et
     if len(image.shape) < 3 or image.shape[2] == 1:
-        # Grayscale image - plot in blue
+        # Gri görüntü - mavi çiz
         histr = cv2.calcHist([image], [0], None, [256], [0, 256])
         cv2.normalize(histr, histr, 0, 300, cv2.NORM_MINMAX)
         for j in range(1, 256):
             cv2.line(hist_img, (j-1, 300-int(histr[j-1])), (j, 300-int(histr[j])),
-                    (255, 0, 0), 1)  # Blue for grayscale
+                    (255, 0, 0), 1)  # Gri için mavi
     else:
-        # Color image
+        # Renkli görüntü
         color = ('b','g','r')
         for i, col in enumerate(color):
             histr = cv2.calcHist([image], [i], None, [256], [0, 256])
@@ -347,7 +347,7 @@ def edit(filename):
         original_hist_img = calculate_histogram(image)
         cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], f'orig_hist_{filename}'), original_hist_img)
     except Exception as e:
-        print(f"Original histogram error: {str(e)}")
+        print(f"Orijinal histogram hatası: {str(e)}")
         original_hist_img = np.zeros((300, 256, 3), dtype=np.uint8)
         cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], f'orig_hist_{filename}'), original_hist_img)
 
@@ -376,14 +376,14 @@ def edit(filename):
                     hist_img = calculate_histogram(processed_image)
                     cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], f'hist_{filename}'), hist_img)
                 except Exception as e:
-                    print(f"Histogram calculation error: {str(e)}")
+                    print(f"Histogram hesaplama hatası: {str(e)}")
                     hist_img = np.zeros((300, 256, 3), dtype=np.uint8)
                     cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], f'hist_{filename}'), hist_img)
 
                 cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], f'processed_{filename}'), processed_image)
         except Exception as e:
             error_msg = f"İşlem sırasında bir hata oluştu: {str(e)}"
-            print(f"Error in image processing: {str(e)}")
+            print(f"Görüntü işleme hatası: {str(e)}")
 
     has_processed = os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], f'processed_{filename}'))
     return render_template('edit.html',
