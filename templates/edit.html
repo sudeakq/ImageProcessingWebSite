@@ -1,32 +1,492 @@
 <!DOCTYPE html>
-<html>
-<head><title>Filtre Uygula</title></head>
-<link rel="stylesheet" type="text/css" href="/static/css/style.css">
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Görüntü İşleme</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2980b9;
+      --background-color: #f5f7fa;
+      --panel-color: #ffffff;
+      --text-color: #333333;
+      --border-radius: 8px;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+      --success-color: #2ecc71;
+      --warning-color: #f39c12;
+      --danger-color: #e74c3c;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+    }
+    
+    .header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1.5rem 0;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+    
+    .container {
+      max-width: 1280px;
+      margin: 1.5rem auto;
+      padding: 0 2rem;
+    }
+    
+    .main-content {
+      display: grid;
+      justify-content: center;
+      align-items: center;
+      grid-template-columns: 600px 1fr;
+      gap: 20px;
+      margin-bottom: 50px;
+    }
+    
+    .tool-panel {
+      background-color: var(--panel-color);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      height: fit-content;
+      margin: 30px;
+    }
+    
+    .error-message {
+      background-color: rgba(231, 76, 60, 0.1);
+      color: var(--danger-color);
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: var(--border-radius);
+      border-left: 4px solid var(--danger-color);
+    }
+    
+    .tools-title {
+      color: var(--primary-color);
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #eee;
+      font-size: 1.2rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+    }
+    
+    .option-panel {
+      background-color: rgba(52, 152, 219, 0.05);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      margin-top: 1rem;
+      border: 1px solid rgba(52, 152, 219, 0.2);
+    }
+    
+    .slider-container {
+      display: flex;
+      align-items: center;
+    }
+    
+    .slider-container input[type="range"] {
+      flex-grow: 1;
+      margin-right: 10px;
+    }
+    
+    .slider-value {
+      min-width: 40px;
+      text-align: center;
+      font-weight: 500;
+      color: var(--primary-color);
+    }
+    
+    .apply-btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      width: 100%;
+      margin-top: 1rem;
+    }
+    
+    .apply-btn:hover {
+      background-color: var(--secondary-color);
+      transform: translateY(-2px);
+    }
+    
+    .apply-btn:active {
+      transform: translateY(0);
+    }
+    
+    .results-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    
+    .image-card {
+      background-color: var(--panel-color);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    
+    .image-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 0.8rem 1.5rem;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .card-body {
+      padding: 1rem;
+      text-align: center;
+    }
+    
+    .card-body img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-footer {
+      padding: 1rem;
+      text-align: center;
+      background-color: #f9f9f9;
+      border-top: 1px solid #eee;
+    }
+    
+    .download-btn {
+      display: inline-block;
+      background-color: var(--success-color);
+      color: white;
+      text-decoration: none;
+      padding: 0.6rem 1.5rem;
+      border-radius: var(--border-radius);
+      transition: var(--transition);
+      font-weight: 500;
+    }
+    
+    .download-btn:hover {
+      background-color: #27ae60;
+      transform: translateY(-2px);
+    }
+    
+    .home-link {
+      display: inline-block;
+      margin-top: 1rem;
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .home-link:hover {
+      text-decoration: underline;
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 1rem 0;
+      margin-top: 2rem;
+      color: #777;
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 992px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .results-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
 <body>
-  <div class="header-section">
-      <h2>Filtre Seç</h2> 
-<form method="post">
-  <select name="action">
-    <option value="average">Ortalama</option>
-    <option value="median">Ortanca</option>
-    <option value="edge">Kenar Algılama</option>
-    <option value="sharpen">Keskinleştirme</option>
-    <option value="smooth">Yumuşatma</option>
-  </select>
-  <input type="submit" value="Uygula">
-</form>
+  <div class="header">
+    <h1>Görüntü İşleme Uygulaması</h1>
   </div>
-<div class="sidetoside">
-  <div class="first-section">
-<h2>Orijinal Resim</h2> 
-<img src="/static/uploads/{{ filename }}" width="300">
-</div>
-<div class="first-section">
-<h2>Sonuç</h2>
-<img src="/static/uploads/processed_{{ filename }}" width="300"></div>
-<div class="first-section">
-<h2>Histogram</h2>
-<img src="/static/uploads/hist_{{ filename }}" width="300"></div>
-</div>
+  
+  <div class="container">
+   
+      <div class="tool-panel">
+        <h2 class="tools-title">İşlem Araçları</h2>
+        
+        {% if error_msg %}
+        <div class="error-message">
+          <strong>Hata:</strong> {{ error_msg }}
+        </div>
+        {% endif %}
+    <form method="post" id="filterForm">
+        <div class="form-group">
+          <label for="action"><strong>İşlem Seç:</strong></label>
+          <select name="action" id="action" class="form-control" onchange="showOptions()">
+  <optgroup label="Filtreler">
+    <option value="average" {% if selected_action == 'average' %}selected{% endif %}>Ortalama Filtre</option>
+    <option value="median" {% if selected_action == 'median' %}selected{% endif %}>Ortanca Filtre</option>
+    <option value="edge" {% if selected_action == 'edge' %}selected{% endif %}>Kenar Algılama</option>
+    <option value="sharpen" {% if selected_action == 'sharpen' %}selected{% endif %}>Keskinleştirme</option>
+    <option value="smooth" {% if selected_action == 'smooth' %}selected{% endif %}>Yumuşatma</option>
+  </optgroup>
+  <optgroup label="Geometrik İşlemler">
+    <option value="rotate" {% if selected_action == 'rotate' %}selected{% endif %}>Döndürme</option>
+    <option value="resize" {% if selected_action == 'resize' %}selected{% endif %}>Yeniden Boyutlandırma</option>
+    <option value="mirror_horizontal" {% if selected_action == 'mirror_horizontal' %}selected{% endif %}>Yatay Aynalama</option>
+    <option value="mirror_vertical" {% if selected_action == 'mirror_vertical' %}selected{% endif %}>Dikey Aynalama</option>
+  </optgroup>
+  <optgroup label="Histogram İşlemleri">
+    <option value="hist_equalize" {% if selected_action == 'hist_equalize' %}selected{% endif %}>Histogram Eşitleme</option>
+    <option value="contrast_stretch" {% if selected_action == 'contrast_stretch' %}selected{% endif %}>Kontrast Germe</option>
+  </optgroup>
+  <optgroup label="Eşikleme İşlemleri">
+    <option value="threshold_manual" {% if selected_action == 'threshold_manual' %}selected{% endif %}>Manuel Eşikleme</option>
+    <option value="threshold_otsu" {% if selected_action == 'threshold_otsu' %}selected{% endif %}>Otsu İkilileştirme</option>
+    <option value="threshold_kapur" {% if selected_action == 'threshold_kapur' %}selected{% endif %}>Kapur İkilileştirme</option>
+  </optgroup>
+  <optgroup label="Morfolojik İşlemler">
+    <option value="dilation" {% if selected_action == 'dilation' %}selected{% endif %}>Genişletme (Dilation)</option>
+    <option value="erosion" {% if selected_action == 'erosion' %}selected{% endif %}>Erozyon (Erosion)</option>
+  </optgroup>
+  <optgroup label="Analiz İşlemleri">
+    <option value="center_of_mass" {% if selected_action == 'center_of_mass' %}selected{% endif %}>Ağırlık Merkezi Hesaplama</option>
+    <option value="skeletonize" {% if selected_action == 'skeletonize' %}selected{% endif %}>İskelet Çıkarma</option>
+  </optgroup>
+</select>
+
+        </div>
+        
+        <!-- Döndürme Parametreleri -->
+        <div id="rotateOptions" class="option-panel" style="display:none;">
+          <div class="form-group">
+            <label for="angle">Açı (derece):</label>
+            <input type="number" name="angle" id="angle" value="90" min="-180" max="180" class="form-control">
+          </div>
+        </div>
+        
+        <!-- Yeniden Boyutlandırma Parametreleri -->
+        <div id="resizeOptions" class="option-panel" style="display:none;">
+          <div class="form-group">
+            <label for="scale">Ölçek Faktörü:</label>
+            <input type="number" name="scale" id="scale" value="1.5" min="0.1" max="5.0" step="0.1" class="form-control">
+          </div>
+        </div>
+        
+        <!-- Kontrast Germe Parametreleri -->
+        <div id="contrastOptions" class="option-panel" style="display:none;">
+          <div class="form-group">
+            <label for="min">Min Değeri (0-255):</label>
+            <div class="slider-container">
+              <input type="range" name="min" id="min" value="50" min="0" max="255" oninput="document.getElementById('minValue').textContent = this.value">
+              <span class="slider-value" id="minValue">50</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="max">Max Değeri (0-255):</label>
+            <div class="slider-container">
+              <input type="range" name="max" id="max" value="200" min="0" max="255" oninput="document.getElementById('maxValue').textContent = this.value">
+              <span class="slider-value" id="maxValue">200</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Manuel Eşikleme Parametreleri -->
+        <div id="thresholdOptions" class="option-panel" style="display:none;">
+          <div class="form-group">
+            <label for="thresh_value">Eşik Değeri (0-255):</label>
+            <div class="slider-container">
+              <input type="range" name="thresh_value" id="thresh_value" value="128" min="0" max="255" oninput="document.getElementById('threshValue').textContent = this.value">
+              <span class="slider-value" id="threshValue">128</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Morfolojik İşlem Parametreleri -->
+        <div id="morphOptions" class="option-panel" style="display:none;">
+          <div class="form-group">
+            <label for="kernel_size">Çekirdek Boyutu:</label>
+            <div class="slider-container">
+              <input type="range" name="kernel_size" id="kernel_size" value="5" min="3" max="15" step="2" oninput="document.getElementById('kernelValue').textContent = this.value">
+              <span class="slider-value" id="kernelValue">5</span>
+            </div>
+          </div>
+        </div>
+        
+        <button type="submit" class="apply-btn" id="processBtn">
+          <span>İşlemi Uygula</span>
+        </button>
+        
+        <div style="text-align: center; margin-top: 1.5rem;">
+          <a href="/" class="home-link">Ana Sayfaya Dön</a>
+        </div>
+      </form>
+
+      </div>
+      
+      <div class="results-panel">
+        <!-- Original Image -->
+        <div class="image-card">
+          <div class="card-header">
+            <h3>Orijinal Görüntü</h3>
+          </div>
+          <div class="card-body">
+            <img src="/static/uploads/{{ filename }}" alt="Orijinal Görüntü">
+          </div>
+        </div>
+        
+        <!-- Original Histogram -->
+        <div class="image-card">
+          <div class="card-header">
+            <h3>Orijinal Histogram</h3>
+          </div>
+          <div class="card-body" style="display: flex; justify-content: center; align-items: center;">
+            <img src="/static/uploads/orig_hist_{{ filename }}" alt="Orijinal Histogram">
+          </div>
+        </div>
+        
+        {% if has_processed %}
+        <!-- Processed Image -->
+        <div class="image-card">
+          <div class="card-header">
+            <h3>İşlenmiş Görüntü</h3>
+          </div>
+          <div class="card-body">
+            <img src="/static/uploads/processed_{{ filename }}" alt="İşlenmiş Görüntü">
+          </div>
+          <div class="card-footer">
+            <a href="/download/processed_{{ filename }}" class="download-btn" download>İndir</a>
+          </div>
+        </div>
+        
+        <!-- Processed Histogram -->
+        <div class="image-card">
+          <div class="card-header">
+            <h3>İşlenmiş Histogram</h3>
+          </div>
+          <div class="card-body">
+            <img src="/static/uploads/hist_{{ filename }}" alt="İşlenmiş Histogram">
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  
+  <div class="footer">
+    <p>Görüntü İşleme Uygulaması &copy; 2025</p>
+  </div>
+
+  <script>
+    // Show relevant parameter options based on selected operation
+    function showOptions() {
+      // Hide all option divs
+      document.getElementById('rotateOptions').style.display = 'none';
+      document.getElementById('resizeOptions').style.display = 'none';
+      document.getElementById('contrastOptions').style.display = 'none';
+      document.getElementById('thresholdOptions').style.display = 'none';
+      document.getElementById('morphOptions').style.display = 'none';
+      
+      // Show only the relevant options
+      const selectedAction = document.getElementById('action').value;
+      
+      if (selectedAction === 'rotate') {
+        document.getElementById('rotateOptions').style.display = 'block';
+      } else if (selectedAction === 'resize') {
+        document.getElementById('resizeOptions').style.display = 'block';
+      } else if (selectedAction === 'contrast_stretch') {
+        document.getElementById('contrastOptions').style.display = 'block';
+      } else if (selectedAction === 'threshold_manual') {
+        document.getElementById('thresholdOptions').style.display = 'block';
+      } else if (selectedAction === 'dilation' || selectedAction === 'erosion') {
+        document.getElementById('morphOptions').style.display = 'block';
+      }
+    }
+    
+    // Add loading state to button on form submission
+    document.getElementById('filterForm').addEventListener('submit', function() {
+      const processBtn = document.getElementById('processBtn');
+      processBtn.innerHTML = '<span>İşleniyor...</span>';
+      processBtn.disabled = true;
+    });
+    
+    // Initialize the options on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      showOptions();
+    });
+    
+    // Add zoom functionality to images
+    document.querySelectorAll('.card-body img').forEach(img => {
+      img.addEventListener('click', function() {
+        if (this.classList.contains('zoomed')) {
+          this.classList.remove('zoomed');
+          this.style.transform = 'scale(1)';
+          this.style.cursor = 'zoom-in';
+        } else {
+          this.classList.add('zoomed');
+          this.style.transform = 'scale(1.5)';
+          this.style.cursor = 'zoom-out';
+        }
+      });
+      
+      img.style.transition = 'transform 0.3s ease';
+      img.style.cursor = 'zoom-in';
+    });
+  </script>
 </body>
 </html>
